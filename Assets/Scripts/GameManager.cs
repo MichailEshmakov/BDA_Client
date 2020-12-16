@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Threading.Tasks;
 
 public class GameManager : Singleton<GameManager>
 {
@@ -11,11 +12,13 @@ public class GameManager : Singleton<GameManager>
     [SerializeField] int scorePerFaller;
     [SerializeField] int startLives;
 
-    [SerializeField] Text endScoreText;
-
     [SerializeField] GameObject startUI;
     [SerializeField] GameObject playUI;
     [SerializeField] GameObject gameoverUI;
+    [SerializeField] GameObject loadingPanel;
+    [SerializeField] Text endScoreText;
+    [SerializeField] InputField nameField;
+    [SerializeField] GameObject namePanel;
 
     private int score;
     private int Score 
@@ -82,12 +85,12 @@ public class GameManager : Singleton<GameManager>
         OnGameover?.Invoke();
     }
 
-    internal void AddScore()
+    public void AddScore()
     {
         Score += scorePerFaller;
     }
 
-    internal void MinusLife()
+    public void MinusLife()
     {
         Lives -= 1;
         if (Lives <= 0)
@@ -96,5 +99,28 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
+    public async void SubmitName()
+    {
+        await SaveScore();
+        CloseNamePanel();
+    }
 
+    private async Task SaveScore()
+    {
+        loadingPanel.SetActive(true);
+        await NetworkManager.Instance.SaveScore(nameField.text, Score);
+        loadingPanel.SetActive(false);
+
+        // TODO: Добавить сообщение об успешности/неуспешности сохранения
+    }
+
+    public void ShowNamePanel()
+    {
+        namePanel.SetActive(true);
+    }
+
+    public void CloseNamePanel()
+    {
+        namePanel.SetActive(false);
+    }
 }

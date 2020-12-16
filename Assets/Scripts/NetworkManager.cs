@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 public class NetworkManager : Singleton<NetworkManager>
 {
-    public async void SaveScore(string playerName, int score)
+    public async Task SaveScore(string playerName, int score)
     {
         if (score >= 0)
         {
@@ -22,7 +22,7 @@ public class NetworkManager : Singleton<NetworkManager>
         }
     }
 
-    private static async Task PostRequestAsync(Dictionary<string, string> data, string adress)
+    private async Task PostRequestAsync(Dictionary<string, string> data, string adress)
     {
         WebRequest request = WebRequest.Create(adress);
         request.Method = "POST";
@@ -46,7 +46,7 @@ public class NetworkManager : Singleton<NetworkManager>
         response.Close();
     }
 
-    private static string DataToRequestString(Dictionary<string, string> data)
+    private string DataToRequestString(Dictionary<string, string> data)
     {
         string result = string.Empty;
         foreach (string key in data.Keys)
