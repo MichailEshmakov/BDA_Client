@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 
 public class GameManager : Singleton<GameManager>
 {
+    // TODO: Вынести работу с UI в UiManager
     [SerializeField] Text scoreText;
     [SerializeField] Text livesText;
     [SerializeField] int scorePerFaller;
@@ -17,6 +19,7 @@ public class GameManager : Singleton<GameManager>
     [SerializeField] GameObject gameoverUI;
     [SerializeField] GameObject loadingPanel;
     [SerializeField] Text endScoreText;
+    [SerializeField] Text rankText;
     [SerializeField] InputField nameField;
     [SerializeField] GameObject namePanel;
 
@@ -48,6 +51,9 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
+    private List<ScoreLine> scoreLines;
+    private int rank;
+
     public enum gameStatus
     {
         start, play, gameover
@@ -76,13 +82,24 @@ public class GameManager : Singleton<GameManager>
         OnStartPlay?.Invoke();
     }
 
-    private void Gameover()
+    private async void Gameover()
     {
         CurrentState = gameStatus.gameover;
+        OnGameover?.Invoke();
+        loadingPanel.SetActive(true);
+        scoreLines = (await NetworkManager.Instance.LoadScoreLines()).ToList();
+        loadingPanel.SetActive(false);
         playUI.SetActive(false);
         gameoverUI.SetActive(true);
         endScoreText.text = $"Your score: {Score}";
-        OnGameover?.Invoke();
+        rank = ComputeRank(scoreLines, Score);
+        rankText.text = $"RANKED: {rank}";
+    }
+
+    private int ComputeRank(List<ScoreLine> scoreLines, int score)
+    {
+        int nearestRank = scoreLines.IndexOf(scoreLines.OrderBy(line => Mathf.Abs(line.score - score)).First());
+        return nearestRank >= 0 ? nearestRank + 1 : 1;
     }
 
     public void AddScore()
@@ -108,7 +125,9 @@ public class GameManager : Singleton<GameManager>
     private async Task SaveScore()
     {
         loadingPanel.SetActive(true);
-        await NetworkManager.Instance.SaveScore(nameField.text, Score);
+        string name = nameField.text;
+        await NetworkManager.Instance.SaveScore(name, Score);
+        scoreLines.Insert(rank, new ScoreLine(name, Score));
         loadingPanel.SetActive(false);
 
         // TODO: Добавить сообщение об успешности/неуспешности сохранения
