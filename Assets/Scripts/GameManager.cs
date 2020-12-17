@@ -22,6 +22,7 @@ public class GameManager : Singleton<GameManager>
     [SerializeField] Text rankText;
     [SerializeField] InputField nameField;
     [SerializeField] GameObject namePanel;
+    [SerializeField] Leaderbord leaderbord;
 
     private int score;
     private int Score 
@@ -99,7 +100,8 @@ public class GameManager : Singleton<GameManager>
     private int ComputeRank(List<ScoreLine> scoreLines, int score)
     {
         int nearestRank = scoreLines.IndexOf(scoreLines.OrderBy(line => Mathf.Abs(line.score - score)).First());
-        return nearestRank >= 0 ? nearestRank + 1 : 1;
+        int rankShift = scoreLines[nearestRank].score > score ? 2 : 1;
+        return nearestRank >= 0 ? (nearestRank + rankShift) : 1;
     }
 
     public void AddScore()
@@ -127,7 +129,7 @@ public class GameManager : Singleton<GameManager>
         loadingPanel.SetActive(true);
         string name = nameField.text;
         await NetworkManager.Instance.SaveScore(name, Score);
-        scoreLines.Insert(rank, new ScoreLine(name, Score));
+        scoreLines.Insert(rank - 1, new ScoreLine(name, Score));
         loadingPanel.SetActive(false);
 
         // TODO: Добавить сообщение об успешности/неуспешности сохранения
@@ -141,5 +143,16 @@ public class GameManager : Singleton<GameManager>
     public void CloseNamePanel()
     {
         namePanel.SetActive(false);
+    }
+
+    public void ShowLeaderbord()
+    {
+        leaderbord.gameObject.SetActive(true);
+        leaderbord.Refresh(scoreLines);
+    }
+
+    public void CloseLeaderbord()
+    {
+        leaderbord.gameObject.SetActive(false);
     }
 }
