@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 public class NetworkManager : Singleton<NetworkManager>
 {
-    private string adress = "http://localhost:3000/score";
+    public string Adress { get; set; }
 
     public async Task SaveScore(string playerName, int score)
     {
@@ -20,13 +20,13 @@ public class NetworkManager : Singleton<NetworkManager>
                 { "score", score.ToString() }
             };
 
-            await PostRequestAsync(data, adress);
+            await PostRequestAsync(data, Adress);
         }
     }
 
     public async Task<ScoreLine[]> LoadScoreLines()
     {
-        string json = JsonHelper.FixJson(await SendGetResponse(adress));
+        string json = JsonHelper.FixJson(await SendGetResponse(Adress));
         ScoreLine[] lines = JsonHelper.FromJson<ScoreLine>(json);
         Array.Sort(lines);
         return lines;

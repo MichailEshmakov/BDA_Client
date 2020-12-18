@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 public class GameManager : Singleton<GameManager>
 {
-    // TODO: Вынести работу с UI в UiManager
+    // TODO: Вынести работу с UI в отдельный класс UiManager
     [SerializeField] Text scoreText;
     [SerializeField] Text livesText;
     [SerializeField] int scorePerFaller;
@@ -23,6 +23,9 @@ public class GameManager : Singleton<GameManager>
     [SerializeField] InputField nameField;
     [SerializeField] GameObject namePanel;
     [SerializeField] Leaderbord leaderbord;
+
+    [SerializeField] InputField adressField;
+    [SerializeField] string defaultAdress;
 
     private int score;
     private int Score 
@@ -70,6 +73,7 @@ public class GameManager : Singleton<GameManager>
     {
         Screen.SetResolution(400, 640, false);
         CurrentState = gameStatus.start;
+        adressField.text = defaultAdress;
     }
 
     public void PlayGame()
@@ -81,6 +85,7 @@ public class GameManager : Singleton<GameManager>
         Score = 0;
         CurrentState = gameStatus.play;
         OnStartPlay?.Invoke();
+        NetworkManager.Instance.Adress = adressField.text;
     }
 
     private async void Gameover()
